@@ -226,7 +226,9 @@ class NeuralNetworkBased(ValueFunction):
     def update(self, central_agent: CentralAgent, num_samples: int = 3):
         # Check if replay buffer has enough samples for an update
         # Epochs we need
+        print("Updating")
         num_min_train_samples = int(5e5 / self.envt.NUM_AGENTS)
+        # num_min_train_samples = int(1e5 / self.envt.NUM_AGENTS)
         if (num_min_train_samples > len(self.replay_buffer)):
             return
 
@@ -577,21 +579,21 @@ def num_to_value_function(envt,num):
         value_function = GreedyValueFunction(envt,two_sided_score)
     elif num == 7:
         value_function = GreedyValueFunction(envt,lambda_entropy_score)
-    elif num == 8:
+    elif num == 8: # profit - lamb * entropy
         value_function = PathBasedNN(envt, load_model_loc=model_loc)
     elif num == 9:
         value_function = GreedyValueFunction(envt,lambda_variance_score)
-    elif num == 10:
+    elif num == 10: # profit - lamb*variance
         value_function = PathBasedNN(envt,load_model_loc=model_loc)
     elif num == 11:
         value_function = GreedyValueFunction(envt,lambda_entropy_rider_score)
-    elif num == 12:
+    elif num == 12: #profit - lamb * entropy (passenger)
         value_function = PathBasedNN(envt,load_model_loc=model_loc)
     elif num == 13:
         value_function = GreedyValueFunction(envt,lambda_variance_rider_score)
-    elif num == 14:
+    elif num == 14: #profit - lamb*variance (passenger)
         value_function = PathBasedNN(envt,load_model_loc=model_loc)
-    elif num == 15:
+    elif num == 15:#profit
         value_function = PathBasedNN(envt,load_model_loc=model_loc)
 
     return value_function

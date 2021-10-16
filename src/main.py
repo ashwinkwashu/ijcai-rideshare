@@ -1,5 +1,6 @@
 import Settings
-Settings.read_from_arguments()
+# Settings.read_from_arguments()
+Settings.read_from_file('model_settings.txt')
 
 from Environment import NYEnvironment
 from CentralAgent import CentralAgent
@@ -146,6 +147,7 @@ def run_epoch(envt,
         # Score feasible actions
         experience = Experience(deepcopy(agents), feasible_actions_all_agents, envt.current_time, len(current_requests))
         scored_actions_all_agents = value_function.get_value([experience])
+        print(scored_actions_all_agents[14])
 
         # Choose actions for each agent
         scored_final_actions = central_agent.choose_actions(scored_actions_all_agents, is_training=is_training, epoch_num=envt.num_days_trained)
@@ -188,6 +190,7 @@ def run_epoch(envt,
 
             # Update value function every TRAINING_FREQUENCY timesteps
             if ((int(envt.current_time) / int(envt.EPOCH_LENGTH)) % TRAINING_FREQUENCY == TRAINING_FREQUENCY - 1):
+                print('training')
                 value_function.update(central_agent)
 
         # Sanity check
@@ -251,7 +254,7 @@ if __name__ == '__main__':
     SAVE_FREQ: int = VALID_FREQ
     Request.MAX_PICKUP_DELAY = PICKUP_DELAY
     Request.MAX_DROPOFF_DELAY = 2 * PICKUP_DELAY
-    NEURAL_VALUE_FUNCTIONS = [1,8]
+    NEURAL_VALUE_FUNCTIONS = [1,8, 10, 12, 14, 15]
 
     # Load in different settings
     training_days = Settings.get_value("training_days")
@@ -302,7 +305,7 @@ if __name__ == '__main__':
 
             envt.num_days_trained += 1
             if value_num in NEURAL_VALUE_FUNCTIONS:
-                value_function.model.save('../models/{}_{}.h5'.format(num_agents,  envt.num_days_trained))
+                value_function.model.save('../models/{}_{}_{}_default_nbhood.h5'.format(value_num, num_agents,  envt.num_days_trained))
 
     # Reset the driver utilities
     envt.reset()

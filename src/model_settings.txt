@@ -1,8 +1,9 @@
 training_days: 0
 testing_days: 1
-num_agents: 5
-value_num: 11
+num_agents: 200
+value_num: 14
 write_file: True
 print_verbose: True
-lambda: 1.25
-pickup_delay: 600
+lambda: 1000000000
+pickup_delay: 300
+model_loc: '../models/14_200_2_default.h5'
