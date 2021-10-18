@@ -1,9 +1,8 @@
 *.pyc
-*.h5
 data/*.txt
 *.csv
 *SANKETS75FCL
 src/__pycache__
 data/
 src/env/
-logs/
+logs/PathBasedNN/

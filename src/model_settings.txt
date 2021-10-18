@@ -6,4 +6,4 @@ write_file: True
 print_verbose: True
 lambda: 1000000000
 pickup_delay: 300
-model_loc: '../models/14_200_2_default.h5'
+model_loc: '../models/14_200_2_default_nbhood.h5'
