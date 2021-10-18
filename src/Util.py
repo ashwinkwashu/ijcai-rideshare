@@ -59,7 +59,7 @@ def change_variance_rider(envt,action,driver_num):
         new_requests[envt.labels[i.pickup]]+=1
     
     current_variance = np.var(percent_success)
-    if current_variance==0: current_variance = 1
+    # if current_variance==0: current_variance = 1
     percent_success_new = []
     for i in range(len(envt.requests_region)):
         if(envt.requests_region[i]+new_requests[i]) == 0:
@@ -67,8 +67,8 @@ def change_variance_rider(envt,action,driver_num):
         else:
             percent_success_new.append((envt.success_region[i]+new_requests[i])/(envt.requests_region[i]+new_requests[i]))
     new_variance = np.var(percent_success_new)
-    if sum(new_requests)==0:
-        new_variance = current_variance
+    # if sum(new_requests)==0:
+    #     new_variance = current_variance
 
     change_variance = new_variance-current_variance
     return change_variance

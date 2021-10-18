@@ -305,7 +305,10 @@ if __name__ == '__main__':
 
             envt.num_days_trained += 1
             if value_num in NEURAL_VALUE_FUNCTIONS:
-                value_function.model.save('../models/{}_{}_{}_default_nbhood.h5'.format(value_num, num_agents,  envt.num_days_trained))
+                zone_type = ''
+                if Settings.has_value("zone_definition"):
+                    zone_type = Settings.get_value("model_loc")
+                value_function.model.save('../models/{}/{}_{}_{}.h5'.format(value_num, num_agents,  envt.num_days_trained, zone_type))
 
     # Reset the driver utilities
     envt.reset()
@@ -327,7 +330,7 @@ if __name__ == '__main__':
             epoch_data['random_shapley'] = central_agent.random_shapley_final
             epoch_data['one_permutation_shapley'] = central_agent.one_permutation_shapley_final
             file_name = str(datetime.datetime.now()).split(".")[0].replace(" ","_").replace(":","")
-            pickle.dump(epoch_data,open("../logs/epoch_data/"+file_name+".pkl","wb"))
+            pickle.dump(epoch_data,open("../logs/epoch_data/{}/{}_{}_{}".format(value_num, num_agents,  envt.num_days_trained, zone_type)+file_name+".pkl","wb"))
             
         value_function.add_to_logs('test_requests_served', total_requests_served, envt.num_days_trained)
 

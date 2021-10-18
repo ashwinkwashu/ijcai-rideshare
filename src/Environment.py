@@ -238,8 +238,14 @@ class NYEnvironment(Environment):
         SHORTESTPATH_FILE: str = self.DATA_DIR + 'zone_path.csv'
         self.shortest_path = read_csv(SHORTESTPATH_FILE, header=None).values
 
-        # self.labels = pickle.loads(open("../data/ny/new_labels.pkl","rb").read())
-        self.labels = pickle.loads(open("../data/ny/nbhood_labels.pkl","rb").read())
+        zone_type = ''
+        if Settings.has_value("zone_definition"):
+            zone_type = Settings.get_value("model_loc")
+        
+        if zone_type == '':
+            self.labels = pickle.loads(open("../data/ny/new_labels.pkl","rb").read())
+        elif zone_type=='nbhood':
+            self.labels = pickle.loads(open("../data/ny/nbhood_labels.pkl","rb").read())
 
         IGNOREDZONES_FILE: str = self.DATA_DIR + 'ignorezonelist.txt'
         self.ignored_zones = read_csv(IGNOREDZONES_FILE, header=None).values.flatten()

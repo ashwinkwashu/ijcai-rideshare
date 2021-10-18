@@ -226,7 +226,7 @@ class NeuralNetworkBased(ValueFunction):
     def update(self, central_agent: CentralAgent, num_samples: int = 3):
         # Check if replay buffer has enough samples for an update
         # Epochs we need
-        print("Updating")
+        # print("Updating")
         num_min_train_samples = int(5e5 / self.envt.NUM_AGENTS)
         # num_min_train_samples = int(1e5 / self.envt.NUM_AGENTS)
         if (num_min_train_samples > len(self.replay_buffer)):

@@ -1,9 +1,8 @@
-training_days: 0
+training_days: 2
 testing_days: 1
-num_agents: 200
+num_agents: 50
 value_num: 14
 write_file: True
 print_verbose: True
 lambda: 1000000000
 pickup_delay: 300
-model_loc: '../models/14_200_2_default_nbhood.h5'
