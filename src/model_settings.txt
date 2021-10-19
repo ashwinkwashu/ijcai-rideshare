@@ -6,3 +6,4 @@ write_file: True
 print_verbose: True
 lambda: 1000000000
 pickup_delay: 300
+zone_definition: 'nbhood'
