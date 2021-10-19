@@ -147,7 +147,6 @@ def run_epoch(envt,
         # Score feasible actions
         experience = Experience(deepcopy(agents), feasible_actions_all_agents, envt.current_time, len(current_requests))
         scored_actions_all_agents = value_function.get_value([experience])
-        print(scored_actions_all_agents[14])
 
         # Choose actions for each agent
         scored_final_actions = central_agent.choose_actions(scored_actions_all_agents, is_training=is_training, epoch_num=envt.num_days_trained)
@@ -190,7 +189,6 @@ def run_epoch(envt,
 
             # Update value function every TRAINING_FREQUENCY timesteps
             if ((int(envt.current_time) / int(envt.EPOCH_LENGTH)) % TRAINING_FREQUENCY == TRAINING_FREQUENCY - 1):
-                print('training')
                 value_function.update(central_agent)
 
         # Sanity check
@@ -305,10 +303,11 @@ if __name__ == '__main__':
 
             envt.num_days_trained += 1
             if value_num in NEURAL_VALUE_FUNCTIONS:
+                lamb = Settings.get_value("lambda")
                 zone_type = ''
                 if Settings.has_value("zone_definition"):
-                    zone_type = Settings.get_value("model_loc")
-                value_function.model.save('../models/{}/{}_{}_{}.h5'.format(value_num, num_agents,  envt.num_days_trained, zone_type))
+                    zone_type = Settings.get_value("zone_definition")
+                value_function.model.save('../models/{}/{}_l{}_{}_{}.h5'.format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type))
 
     # Reset the driver utilities
     envt.reset()
@@ -330,7 +329,11 @@ if __name__ == '__main__':
             epoch_data['random_shapley'] = central_agent.random_shapley_final
             epoch_data['one_permutation_shapley'] = central_agent.one_permutation_shapley_final
             file_name = str(datetime.datetime.now()).split(".")[0].replace(" ","_").replace(":","")
-            pickle.dump(epoch_data,open("../logs/epoch_data/{}/{}_{}_{}".format(value_num, num_agents,  envt.num_days_trained, zone_type)+file_name+".pkl","wb"))
+            lamb = Settings.get_value("lambda")
+            zone_type = ''
+            if Settings.has_value("zone_definition"):
+                zone_type = Settings.get_value("zone_definition")
+            pickle.dump(epoch_data,open("../logs/epoch_data/{}/{}_l{}_{}_{}".format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type)+file_name+".pkl","wb"))
             
         value_function.add_to_logs('test_requests_served', total_requests_served, envt.num_days_trained)
 

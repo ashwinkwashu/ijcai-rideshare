@@ -240,7 +240,7 @@ class NYEnvironment(Environment):
 
         zone_type = ''
         if Settings.has_value("zone_definition"):
-            zone_type = Settings.get_value("model_loc")
+            zone_type = Settings.get_value("zone_definition")
         
         if zone_type == '':
             self.labels = pickle.loads(open("../data/ny/new_labels.pkl","rb").read())
