@@ -246,6 +246,7 @@ class NYEnvironment(Environment):
             self.labels = pickle.loads(open("../data/ny/new_labels.pkl","rb").read())
         elif zone_type=='nbhood':
             self.labels = pickle.loads(open("../data/ny/nbhood_labels.pkl","rb").read())
+        self.labels = pickle.loads(open("../data/ny/nbhood_labels.pkl","rb").read())
 
         IGNOREDZONES_FILE: str = self.DATA_DIR + 'ignorezonelist.txt'
         self.ignored_zones = read_csv(IGNOREDZONES_FILE, header=None).values.flatten()
