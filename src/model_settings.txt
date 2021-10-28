@@ -1,9 +1,9 @@
 training_days: 2
 testing_days: 1
-num_agents: 1000
+num_agents: 200
 value_num: 14
 write_file: True
 print_verbose: True
-lambda: 10000000000
+lambda: 100000000
 pickup_delay: 300
 zone_definition: 'nbhood'

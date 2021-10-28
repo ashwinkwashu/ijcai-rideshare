@@ -23,6 +23,10 @@ import numpy as np
 import time
 import datetime
 
+import os
+#For libiomp5 multiple initialisation error
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 start = time.time()
 
 # Get statistics by simulating the next epoch 
@@ -196,9 +200,9 @@ def run_epoch(envt,
             assert envt.has_valid_path(agent)
 
         # Writing statistics to logs
-        value_function.add_to_logs('rewards_day_{}'.format(envt.num_days_trained), sum(rewards), envt.current_time)
-        avg_capacity = sum([agent.path.current_capacity for agent in agents]) / envt.NUM_AGENTS
-        value_function.add_to_logs('avg_capacity_day_{}'.format(envt.num_days_trained), avg_capacity, envt.current_time)
+        # value_function.add_to_logs('rewards_day_{}'.format(envt.num_days_trained), sum(rewards), envt.current_time)
+        # avg_capacity = sum([agent.path.current_capacity for agent in agents]) / envt.NUM_AGENTS
+        # value_function.add_to_logs('avg_capacity_day_{}'.format(envt.num_days_trained), avg_capacity, envt.current_time)
 
         epoch_dictionary = {}
         for agent in agents:
@@ -307,7 +311,7 @@ if __name__ == '__main__':
                 zone_type = ''
                 if Settings.has_value("zone_definition"):
                     zone_type = Settings.get_value("zone_definition")
-                value_function.model.save('../models/{}/{}_l{}_{}_{}.h5'.format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type))
+                value_function.model.save('../models/{}Lambdas/{}_l{}_{}_{}.h5'.format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type))
 
     # Reset the driver utilities
     envt.reset()
@@ -333,7 +337,7 @@ if __name__ == '__main__':
             zone_type = ''
             if Settings.has_value("zone_definition"):
                 zone_type = Settings.get_value("zone_definition")
-            pickle.dump(epoch_data,open("../logs/epoch_data/{}/{}_l{}_{}_{}".format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type)+file_name+".pkl","wb"))
+            pickle.dump(epoch_data,open("../logs/epoch_data/{}Lambdas/{}_l{}_{}_{}".format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type)+file_name+".pkl","wb"))
             
         value_function.add_to_logs('test_requests_served', total_requests_served, envt.num_days_trained)
 

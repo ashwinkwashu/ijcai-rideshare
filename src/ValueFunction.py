@@ -228,7 +228,7 @@ class NeuralNetworkBased(ValueFunction):
         # Epochs we need
         # print("Updating")
         num_min_train_samples = int(5e5 / self.envt.NUM_AGENTS)
-        # num_min_train_samples = int(1e5 / self.envt.NUM_AGENTS)
+        # num_min_train_samples = int(5e4 / self.envt.NUM_AGENTS)
         if (num_min_train_samples > len(self.replay_buffer)):
             return
 
