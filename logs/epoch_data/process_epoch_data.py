@@ -1,7 +1,10 @@
 import pickle
 from copy import deepcopy
-filename = '14Edit/200_l8_2_nbhood2021-10-21_062047.pkl'
-# filename = '14/1000_l10_2_nbhood2021-10-21_030841.pkl'
+filename = '14Lambdas/1000_l11_2_2021-10-29_160732.pkl'
+filename = '14/200_l10_2_nbhood2021-10-19_024439.pkl'
+filename = '14Edit/50_l10_2_nbhood2021-10-21_032122.pkl'
+filename = '14Lambdas/1000_l7_2_2021-10-30_175839.pkl'
+filename = '10Lambdas/1000_l0.6666666666666666_3_nbhood2022-11-05_225120.pkl'
 epoch_data = pickle.load(open(filename,'rb'))
 
 print(epoch_data['settings'])
@@ -103,8 +106,11 @@ for z1, v1 in zsr2.items():
         v2[0] = v2[1]/v2[2]
         pairwise_zsrs.append(v2[0])
 
+print(zsr2)
 gini_pair = gini(pairwise_zsrs)
 print('Gini zone-pairs :',gini_pair)
+min_pair_zsr = min(pairwise_zsrs)
+print('Min zone-pair service rate :',min_pair_zsr)
 print(sums[0],sums[1])
 print("Need to filter out the ignored zones from the request file. The numbers will be slightly off")
 print(total_accepted,total_num_reqs)

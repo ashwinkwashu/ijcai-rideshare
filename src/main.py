@@ -1,6 +1,6 @@
 import Settings
 Settings.read_from_arguments()
-# Settings.read_from_file('model_settings.txt')
+Settings.read_from_file('model_settings.txt')
 
 from Environment import NYEnvironment
 from CentralAgent import CentralAgent
@@ -143,7 +143,11 @@ def run_epoch(envt,
         ret_dictionary['epoch_locations_all'].append([i.pickup for i in current_requests])
 
         for i in current_requests:
-            envt.requests_region[envt.labels[i.pickup]]+=1
+            if envt.pair_zone:
+                region_id = envt.labels[i.pickup]*envt.NUM_REGIONS + envt.labels[i.dropoff]
+                envt.requests_region[region_id]+=1
+            else:
+                envt.requests_region[envt.labels[i.pickup]]+=1
 
         # Get feasible actions
         feasible_actions_all_agents = oracle.get_feasible_actions(agents, current_requests)
@@ -175,7 +179,12 @@ def run_epoch(envt,
             reward = len(action.requests)
             locations_served += [request.pickup for request in action.requests]
             for request in action.requests:
-                envt.success_region[envt.labels[request.pickup]]+=1
+                if envt.pair_zone:
+                    region_id = envt.labels[request.pickup]*envt.NUM_REGIONS + envt.labels[request.dropoff]
+                    # print(region_id)
+                    envt.success_region[region_id]+=1
+                else:
+                    envt.success_region[envt.labels[request.pickup]]+=1
             rewards.append(reward)
             total_value_generated += reward
 
@@ -267,14 +276,19 @@ if __name__ == '__main__':
 
     if Settings.has_value("pickup_delay"):
         PICKUP_DELAY = Settings.get_value("pickup_delay")
+    pair_zone= False
+    if Settings.has_value("pair_zone"):
+        pair_zone = Settings.get_value("pair_zone")
 
     TRAINING_DAYS: List[int] = list(range(3, 3+training_days))
+    # TRAINING_DAYS: List[int] = list(range(6, 6+training_days)) #Remove
     TEST_DAYS: List[int] = list(range(11, 11+testing_days))
 
     # Initialising components
     # TODO: Save start hour not start epoch
     envt = NYEnvironment(num_agents, START_EPOCH=START_HOUR * 3600, STOP_EPOCH=END_HOUR * 3600,
-                         MAX_CAPACITY=CAPACITY, EPOCH_LENGTH=DECISION_INTERVAL)
+                         MAX_CAPACITY=CAPACITY, EPOCH_LENGTH=DECISION_INTERVAL, pair_zone=pair_zone)
+    # envt.num_days_trained = 3 #Remove
     oracle = Oracle(envt)
     central_agent = CentralAgent(envt)
     central_agent.mode = "train"
@@ -290,20 +304,20 @@ if __name__ == '__main__':
             print("DAY: {}, Requests: {}\n\n".format(day, total_requests_served))
             value_function.add_to_logs('requests_served', total_requests_served, envt.num_days_trained)
 
-            # Check validation score every VALID_FREQ days
-            if (envt.num_days_trained % VALID_FREQ == VALID_FREQ - 1):
-                test_score = 0
-                for day in VALID_DAYS:
-                    total_requests_served = run_epoch(envt, oracle, central_agent, value_function, day, is_training=False)['total_requests_accepted']
-                    print("(VALIDATION) DAY: {}, Requests: {}\n\n".format(day, total_requests_served))
-                    test_score += total_requests_served
-                value_function.add_to_logs('validation_score', test_score, envt.num_days_trained)
+            # # Check validation score every VALID_FREQ days
+            # if (envt.num_days_trained % VALID_FREQ == VALID_FREQ - 1):
+            #     test_score = 0
+            #     for day in VALID_DAYS:
+            #         total_requests_served = run_epoch(envt, oracle, central_agent, value_function, day, is_training=False)['total_requests_accepted']
+            #         print("(VALIDATION) DAY: {}, Requests: {}\n\n".format(day, total_requests_served))
+            #         test_score += total_requests_served
+            #     value_function.add_to_logs('validation_score', test_score, envt.num_days_trained)
 
-                # TODO: Save results better
-                if (isinstance(value_function, NeuralNetworkBased)):
-                    if (test_score > max_test_score or (envt.num_days_trained % SAVE_FREQ) == (SAVE_FREQ - 1)):
-                        value_function.model.save('../models/{}_{}agent_{}capacity_{}delay_{}interval_{}_{}.h5'.format(type(value_function).__name__, numagents, args.capacity, args.pickupdelay, args.decisioninterval, envt.num_days_trained, test_score))
-                        max_test_score = test_score if test_score > max_test_score else max_test_score
+            #     # TODO: Save results better
+            #     if (isinstance(value_function, NeuralNetworkBased)):
+            #         if (test_score > max_test_score or (envt.num_days_trained % SAVE_FREQ) == (SAVE_FREQ - 1)):
+            #             value_function.model.save('../models/{}_{}agent_{}capacity_{}delay_{}interval_{}_{}.h5'.format(type(value_function).__name__, numagents, args.capacity, args.pickupdelay, args.decisioninterval, envt.num_days_trained, test_score))
+            #             max_test_score = test_score if test_score > max_test_score else max_test_score
 
             envt.num_days_trained += 1
             if value_num in NEURAL_VALUE_FUNCTIONS:
@@ -311,7 +325,20 @@ if __name__ == '__main__':
                 zone_type = ''
                 if Settings.has_value("zone_definition"):
                     zone_type = Settings.get_value("zone_definition")
-                value_function.model.save('../models/{}Lambdas/{}_l{}_{}_{}.h5'.format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type))
+                if value_num==14:
+                    pair = 'Pair' if pair_zone else ''
+                    model_path = f'../models/{value_num}Lambdas{pair}/'
+                    model_name = f'{num_agents}_l{len(str(lamb))-1}_{envt.num_days_trained}_{zone_type}.h5'
+                    # value_function.model.save('../models/{}Lambdas/{}_l{}_{}_{}.h5'.format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type))
+                else:
+                    pair = 'Pair' if pair_zone else ''
+                    model_path = f'../models/{value_num}Lambdas{pair}/'
+                    model_name = f'{num_agents}_l{lamb}_{envt.num_days_trained}_{zone_type}.h5'
+                    # value_function.model.save('../models/{}Lambdas/{}_l{}_{}_{}.h5'.format(value_num, num_agents, lamb, envt.num_days_trained, zone_type))
+                if not os.path.exists(model_path):
+                    os.makedirs(model_path)
+                value_function.model.save(model_path+model_name)
+
 
     # Reset the driver utilities
     envt.reset()
@@ -337,7 +364,19 @@ if __name__ == '__main__':
             zone_type = ''
             if Settings.has_value("zone_definition"):
                 zone_type = Settings.get_value("zone_definition")
-            pickle.dump(epoch_data,open("../logs/epoch_data/{}Lambdas/{}_l{}_{}_{}".format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type)+file_name+".pkl","wb"))
+            if value_num==14: 
+                pair = 'Pair' if pair_zone else ''
+                file_path = f'../logs/epoch_data/{value_num}Lambdas{pair}/'
+                f_name = f'{num_agents}_l{len(str(lamb))-1}_{envt.num_days_trained}_{zone_type}{file_name}.pkl'
+                # value_function.model.save('../models/{}Lambdas/{}_l{}_{}_{}.h5'.format(value_num, num_agents, len(str(lamb))-1, envt.num_days_trained, zone_type))
+            else:
+                file_path = f'../logs/epoch_data/{value_num}Lambdas/'
+                f_name = f'{num_agents}_l{lamb}_{envt.num_days_trained}_{zone_type}{file_name}.pkl'
+                # value_function.model.save('../models/{}Lambdas/{}_l{}_{}_{}.h5'.format(value_num, num_agents, lamb, envt.num_days_trained, zone_type))
+            if not os.path.exists(file_path):
+                os.makedirs(file_path)
+
+            pickle.dump(epoch_data,open(file_path+f_name ,"wb"))
             
         value_function.add_to_logs('test_requests_served', total_requests_served, envt.num_days_trained)
 

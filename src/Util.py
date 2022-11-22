@@ -31,7 +31,11 @@ def change_entropy_rider(envt,action,driver_num):
     new_requests = [0 for i in range(len(envt.requests_region))]
 
     for i in action.requests:
-        new_requests[envt.labels[i.pickup]]+=1
+        if envt.pair_zone:
+            region_id = envt.labels[i.pickup]*envt.NUM_REGIONS + envt.labels[i.dropoff]
+            new_requests[region_id]+=1
+        else:
+            new_requests[envt.labels[i.pickup]]+=1
     
     current_entropy = get_entropy_list(percent_success)
     percent_success_new = []
@@ -56,7 +60,11 @@ def change_variance_rider(envt,action,driver_num):
     new_requests = [0 for i in range(len(envt.requests_region))]
 
     for i in action.requests:
-        new_requests[envt.labels[i.pickup]]+=1
+        if envt.pair_zone:
+            region_id = envt.labels[i.pickup]*envt.NUM_REGIONS + envt.labels[i.dropoff]
+            new_requests[region_id]+=1
+        else:
+            new_requests[envt.labels[i.pickup]]+=1
     
     current_variance = np.var(percent_success)
     # if current_variance==0: current_variance = 1

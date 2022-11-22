@@ -22,7 +22,7 @@ class Environment(metaclass=ABCMeta):
 
     REQUEST_HISTORY_SIZE: int = 1000
 
-    def __init__(self, NUM_LOCATIONS: int, MAX_CAPACITY: int, EPOCH_LENGTH: float, NUM_AGENTS: int, START_EPOCH: float, STOP_EPOCH: float, DATA_DIR: str):
+    def __init__(self, NUM_LOCATIONS: int, MAX_CAPACITY: int, EPOCH_LENGTH: float, NUM_AGENTS: int, START_EPOCH: float, STOP_EPOCH: float, DATA_DIR: str, pair_zone = False):
         # Load environment
         self.NUM_LOCATIONS = NUM_LOCATIONS
         self.MAX_CAPACITY = MAX_CAPACITY
@@ -31,12 +31,17 @@ class Environment(metaclass=ABCMeta):
         self.START_EPOCH = START_EPOCH
         self.STOP_EPOCH = STOP_EPOCH
         self.DATA_DIR = DATA_DIR
+
         self.NUM_REGIONS = 10
+        self.pair_zone = pair_zone
         
         self.driver_utilities = [0 for i in range(NUM_AGENTS)]
         self.driver_profits = [0 for i in range(NUM_AGENTS)]
         self.requests_region = [0 for i in range(self.NUM_REGIONS)]
         self.success_region = [0 for i in range(self.NUM_REGIONS)]
+        if self.pair_zone:
+            self.requests_region = [0 for i in range(self.NUM_REGIONS**2)]
+            self.success_region = [0 for i in range(self.NUM_REGIONS**2)]
         self.num_days_trained = 0
         self.recent_request_history: Deque[Request] = deque(maxlen=self.REQUEST_HISTORY_SIZE)
         self.current_time: float = 0.0
@@ -224,8 +229,8 @@ class NYEnvironment(Environment):
     NUM_MAX_AGENTS: int = 3000
     NUM_LOCATIONS: int = 4461
 
-    def __init__(self,NUM_AGENTS: int, START_EPOCH: float, STOP_EPOCH: float, MAX_CAPACITY, DATA_DIR: str='../data/ny/', EPOCH_LENGTH: float = 60.0) :
-        super().__init__(NUM_LOCATIONS=self.NUM_LOCATIONS, MAX_CAPACITY=MAX_CAPACITY, EPOCH_LENGTH=EPOCH_LENGTH, NUM_AGENTS=NUM_AGENTS, START_EPOCH=START_EPOCH, STOP_EPOCH=STOP_EPOCH, DATA_DIR=DATA_DIR)
+    def __init__(self,NUM_AGENTS: int, START_EPOCH: float, STOP_EPOCH: float, MAX_CAPACITY, DATA_DIR: str='../data/ny/', EPOCH_LENGTH: float = 60.0, pair_zone=False) :
+        super().__init__(NUM_LOCATIONS=self.NUM_LOCATIONS, MAX_CAPACITY=MAX_CAPACITY, EPOCH_LENGTH=EPOCH_LENGTH, NUM_AGENTS=NUM_AGENTS, START_EPOCH=START_EPOCH, STOP_EPOCH=STOP_EPOCH, DATA_DIR=DATA_DIR, pair_zone=pair_zone)
         self.initialise_environment()
         
 
@@ -246,6 +251,7 @@ class NYEnvironment(Environment):
             self.labels = pickle.loads(open("../data/ny/new_labels.pkl","rb").read())
         elif zone_type=='nbhood':
             self.labels = pickle.loads(open("../data/ny/nbhood_labels.pkl","rb").read())
+            print(len(set(self.labels)), " labels found")
         self.labels = pickle.loads(open("../data/ny/nbhood_labels.pkl","rb").read())
 
         IGNOREDZONES_FILE: str = self.DATA_DIR + 'ignorezonelist.txt'
