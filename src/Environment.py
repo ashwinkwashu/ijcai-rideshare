@@ -11,7 +11,7 @@ from pandas import read_csv
 from collections import deque
 from docplex.mp.model import Model  # type: ignore
 import re
-from random import randint, random
+from random import randint, random, shuffle
 import numpy as np
 import Settings
 import Util
@@ -86,7 +86,11 @@ class Environment(metaclass=ABCMeta):
 
         # Perform Rebalancing
         if (rebalance and agents_to_rebalance):
-            rebalancing_targets = self._get_rebalance_targets([agent for agent, _ in agents_to_rebalance])
+            if len(agents_to_rebalance)>self.NUM_AGENTS/4:
+                # print('greedy')
+                rebalancing_targets = self._get_greedy_rebalance_targets([agent for agent, _ in agents_to_rebalance])
+            else:
+                rebalancing_targets = self._get_rebalance_targets([agent for agent, _ in agents_to_rebalance])
 
             # Move cars according to the rebalancing_targets
             for idx, target in enumerate(rebalancing_targets):
@@ -130,6 +134,43 @@ class Environment(metaclass=ABCMeta):
 
         return time_remaining
 
+    def _get_greedy_rebalance_targets(self, vehs):
+        #A greedy way to rebalance instead of solving an ILP. 
+        # Since rebalancing is an approximation, this shouldn't hurt.
+        # Random-greedy selection of targets (select random order of vehicles and assign closest target)
+
+        # Get a list of possible targets by sampling from recent_requests
+        possible_targets: List[Request] = []
+        for _ in range(len(vehs)):
+            target = choice(self.recent_request_history)
+            possible_targets.append(target)
+
+        vehicle_times = []
+        for v in vehs:
+            veh_times = [
+                    (self.get_travel_time(v.position.next_location, possible_targets[target_id].pickup),
+                    target_id)
+                     for target_id in range(len(possible_targets))
+                     ]
+            veh_times.sort(key=lambda x: x[0])
+            vehicle_times.append(veh_times)
+
+        #create random shuffling of vehicles
+        veh_ids = list(range(len(vehs)))
+        shuffle(veh_ids)
+        used_targets = set()
+        assigned_targets = [None]*len(vehs)
+        total_time = 0
+        for veh_idx in veh_ids:
+            #Assign the highest scoring action that does not use any of the used requests
+            for travel_time, target_id in vehicle_times[veh_idx]:
+                if not target_id in used_targets:
+                    assigned_targets[veh_idx] = possible_targets[target_id]
+                    used_targets.add(target_id)
+                    total_time += travel_time
+                    break
+        return assigned_targets
+    
     def _get_rebalance_targets(self, agents: List[LearningAgent]) -> List[Request]:
         # Get a list of possible targets by sampling from recent_requests
         possible_targets: List[Request] = []
@@ -173,7 +214,8 @@ class Environment(metaclass=ABCMeta):
 
     def profit_function(self,travel_time):
         minutes_driven = travel_time/60
-        return round(minutes_driven+5,2)
+        # return round(minutes_driven+5,2)
+        return 1
 
     def get_reward(self, action: Action,driver_num: int) -> float:
         """

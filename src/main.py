@@ -150,15 +150,18 @@ def run_epoch(envt,
                 envt.requests_region[envt.labels[i.pickup]]+=1
 
         # Get feasible actions
-        feasible_actions_all_agents = oracle.get_feasible_actions(agents, current_requests)
+        feasible_actions_all_agents = oracle.get_feasible_actions(agents, current_requests, is_training=is_training)
 
+        print("Got actions")
         # Score feasible actions
         experience = Experience(deepcopy(agents), feasible_actions_all_agents, envt.current_time, len(current_requests))
         scored_actions_all_agents = value_function.get_value([experience])
 
+        print("scored actions")
         # Choose actions for each agent
         scored_final_actions = central_agent.choose_actions(scored_actions_all_agents, is_training=is_training, epoch_num=envt.num_days_trained)
 
+        print("chose actions")
         # Assign final actions to agents
         for agent_idx, (action, _) in enumerate(scored_final_actions):
             agents[agent_idx].path = deepcopy(action.new_path)
@@ -203,7 +206,7 @@ def run_epoch(envt,
             # Update value function every TRAINING_FREQUENCY timesteps
             if ((int(envt.current_time) / int(envt.EPOCH_LENGTH)) % TRAINING_FREQUENCY == TRAINING_FREQUENCY - 1):
                 value_function.update(central_agent)
-
+        print("Back here")
         # Sanity check
         for agent in agents:
             assert envt.has_valid_path(agent)

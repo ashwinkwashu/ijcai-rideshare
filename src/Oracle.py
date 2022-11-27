@@ -23,7 +23,8 @@ class Oracle(object):
                              requests: List[Request],
                              MAX_ACTIONS: int = -1,
                              MAX_TRIPS_SIZE_1: int = 30,
-                             MAX_IS_FEASIBLE_CALLS: int = 150) -> List[List[Action]]:
+                             MAX_IS_FEASIBLE_CALLS: int = 150,
+                             is_training=True) -> List[List[Action]]:
         """Get a list of the best feasible actions for each agent."""
 
         # Associate requests with closest MAX_TRIPS_SIZE_1 vehicles
@@ -39,6 +40,8 @@ class Oracle(object):
                 agent_idx = times_to_pickup[idx][0]
                 requests_for_each_agent[agent_idx].append(request)
 
+        if is_training:
+            print('Single action')
         # Get feasible trips for each vehicle
         feasible_actions_all_agents = []
         for requests_for_agent, agent in zip(requests_for_each_agent, agents):
@@ -61,6 +64,9 @@ class Oracle(object):
 
                 num_is_feasible_calls += 1
                 tested_actions.add(action)
+            if is_training:
+                feasible_actions_all_agents.append(trips)
+                continue
 
             # Get feasible trips of size > 1, with a fixed budget of MAX_IS_FEASIBLE_CALLS
             def trip_priority(trip: Action) -> float:

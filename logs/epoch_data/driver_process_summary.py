@@ -4,10 +4,13 @@ filename = '14Lambdas/1000_l11_2_2021-10-29_160732.pkl'
 filename = '14/200_l10_2_nbhood2021-10-19_024439.pkl'
 filename = '14Edit/50_l10_2_nbhood2021-10-21_032122.pkl'
 filename = '14Lambdas/1000_l7_2_2021-10-30_175839.pkl'
-filename = '10Lambdas/1000_l0.6666666666666666_3_nbhood2022-11-05_225120.pkl'
-filename = '10Lambdas/1000_l0.6666666666666666_8_nbhood2022-11-11_041844.pkl'
 filename = '14LambdasPair/1000_l7_2_nbhood2022-11-21_053759.pkl'
 filename = '14LambdasPair/1000_l8_2_nbhood2022-11-21_195617.pkl'
+filename = '14LambdasPair/1000_l9_2_nbhood2022-11-25_121435.pkl'
+filename = '14LambdasPair/1000_l10_2_nbhood2022-11-26_113300.pkl'
+filename = '10Lambdas/1000_l1_3_nbhood2022-11-27_063357.pkl'
+filename = '10Lambdas/1000_l0.6666666666666666_3_nbhood2022-11-05_225120.pkl'
+filename = '10Lambdas/1000_l0.6666666666666666_8_nbhood2022-11-11_041844.pkl'
 epoch_data = pickle.load(open(filename,'rb'))
 
 print(epoch_data['settings'])
@@ -163,13 +166,27 @@ summary['Rewards'] = epoch_data['total_requests_accepted']
 summary['Trips Per Driver'] = dts
 summary['TPD gini'] = d_data['TPD gini']
 summary['capacity'] = 4
-# summary['lambda'] = 4/6
-summary['lambda'] = 10**lamb
+summary['lambda'] = epoch_data['settings']['lambda']
+# summary['lambda'] = 10**lamb
 summary['numvehs'] = 1000
 
-#Dump to summary.pickle
-pickle.dump(summary, open(f'Summary2days14Pair{vehs}_l{lamb}_nbhood.pkl', 'wb'))
 
+lambd = epoch_data['settings']['lambda']
+training_days = epoch_data['settings']['training_days']
+#Dump to summary.pickle
+if epoch_data['settings']['value_num']==10:
+    summary['valuefunction'] = 'fairnn_driver'
+    print("DRIVER")
+    pickle.dump(summary, open(f'Summary{training_days}days10_{vehs}_l{int(lambd*6)}_6_nbhood.pkl', 'wb'))
+if epoch_data['settings']['value_num']==14:
+    summary['valuefunction'] = 'fairnn_rider'
+    print("Rider")
+    pickle.dump(summary, open(f'Summary{training_days}days14Pair{vehs}_l{lamb}_nbhood.pkl', 'wb'))
+# dit
+
+#sort dts
+dts.sort()
+print(dts[:10])
 import matplotlib.pyplot as plt
 fig, axs = plt.subplots(1,1)
 # fig.set_size_inches(18.5, 2)
@@ -177,5 +194,5 @@ fig, axs = plt.subplots(1,1)
 axs.hist(dts, bins =100, range=(0,320))
 # axs.hist(dts, bins =100)
 axs.set_ylim([0,150])
-plt.title(f'IJCAI(lambda=4/6), {1000} vehicles')
+plt.title(f'IJCAI(lambda={lambd}), {1000} vehicles')
 plt.show()
